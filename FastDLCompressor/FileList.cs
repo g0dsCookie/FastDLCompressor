@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace CookieProjects.FastDLCompressor
 {
@@ -26,57 +28,107 @@ namespace CookieProjects.FastDLCompressor
 
 		public void Compress(string targetDirectory)
 		{
-			Parallel.ForEach(Files, f =>
+			var config = JsonConfiguration.Configuration;
+			Parallel.ForEach(Files, new ParallelOptions()
 			{
-				var targetFileName = Path.Combine(targetDirectory, f.RelativePath + ".bz2");
+				MaxDegreeOfParallelism = config.MaxThreads != 0 ? config.MaxThreads : Environment.ProcessorCount
+			},
+			f => {
+				var relPath = Helper.ToRelativePath(BaseDirectory, f.Path);
+				var targetFileName = Path.Combine(targetDirectory, relPath + ".bz2");
 				Directory.CreateDirectory(Path.GetDirectoryName(targetFileName));
+
+				var fi = new FileInfo(f.Path);
+				if (fi.Length <= config.CompressionOptions.MinimumSize)
+				{
+					if (config.Verbose)
+						Console.WriteLine($"Moving file {relPath} because the size is below the MinimumSize.");
+					File.Move(f.Path, targetFileName);
+					return;
+				}
+
 				using (var sourceFile = new FileStream(f.Path, FileMode.Open, FileAccess.Read, FileShare.Read))
 				{
 					using (var targetFile = new FileStream(targetFileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None))
 					{
 						try
 						{
-							BZip2.Compress(sourceFile, targetFile, true, 9);
+							if (config.Verbose)
+								Console.WriteLine($"Compressing file {relPath}");
+							BZip2.Compress(sourceFile, targetFile, true, config.CompressionOptions.Level);
 						}
 						catch (Exception ex)
 						{
-							Console.WriteLine($"Could not compress {f.RelativePath}: {ex.Message}");
+							Console.WriteLine($"Could not compress {relPath}: {ex.Message}");
 						}
 					}
 				}
 			});
 		}
 
-		private static FileEntry[] Walk(string directory, FileList parent)
+		static bool MatchFilters(string relFile, string[] filters)
+		{
+			if (filters == null)
+				return false;
+
+			foreach (var f in filters)
+			{
+				if (Regex.IsMatch(relFile, f))
+					return true;
+			}
+			return false;
+		}
+
+		private static List<FileEntry> Walk(string directory, SourceDirectory sDir)
 		{
 			var entries = new List<FileEntry>();
-
-			Parallel.ForEach(Directory.EnumerateDirectories(directory), d =>
+			var config = JsonConfiguration.Configuration;
+			
+			Parallel.ForEach(Directory.EnumerateFileSystemEntries(directory), new ParallelOptions()
 			{
-				var t = Walk(d, parent);
-				lock (entries)
+				MaxDegreeOfParallelism = config.MaxThreads != 0 ? config.MaxThreads : Environment.ProcessorCount
+			},
+			f => { 
+				var relPath = Helper.ToRelativePath(sDir.Directory, f);
+				if (!MatchFilters(relPath, sDir.Includes) && MatchFilters(relPath, sDir.Filters))
+					return;
+
+				var attr = File.GetAttributes(f);
+				if (attr.HasFlag(FileAttributes.Directory))
 				{
-					entries.AddRange(t);
+					var t = Walk(f, sDir);
+					if (t.Count > 0)
+					{
+						lock (entries)
+						{
+							entries.AddRange(t);
+						}
+					}
+					t = null;
+				}
+				else
+				{
+					lock (entries)
+					{
+						entries.Add(new FileEntry(f));
+					}
 				}
 			});
 
-			foreach (var f in Directory.EnumerateFiles(directory))
-			{
-				var entry = new FileEntry(f, parent);
-				entries.Add(entry);
-			}
-
-			return entries.ToArray();
+			return entries;
 		}
 
-		public static FileList Build(string baseDir)
+		public static FileList Build(SourceDirectory directory)
 		{
-			if (baseDir[baseDir.Length-1] != Path.DirectorySeparatorChar)
-				baseDir += Path.DirectorySeparatorChar;
+			if (directory.Directory[directory.Directory.Length - 1] != Path.DirectorySeparatorChar)
+				directory.Directory += Path.DirectorySeparatorChar;
+			
+			var fl = new FileList(directory.Directory);
 
-			var fl = new FileList(baseDir);
-			var files = Walk(baseDir, fl);
-			fl.Files.AddRange(files);
+			var files = Walk(directory.Directory, directory);
+			if (files.Count > 0)
+				fl.Files.AddRange(files);
+			
 			return fl;
 		}
 	}
