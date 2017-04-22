@@ -34,7 +34,7 @@ namespace CookieProjects.FastDLCompressor
 				MaxDegreeOfParallelism = config.MaxThreads != 0 ? config.MaxThreads : Environment.ProcessorCount
 			},
 			f => {
-				var relPath = Helper.ToRelativePath(BaseDirectory, f.Path);
+				var relPath = BaseDirectory.RelativePath(f.Path);
 				var targetFileName = Path.Combine(targetDirectory, relPath + ".bz2");
 				Directory.CreateDirectory(Path.GetDirectoryName(targetFileName));
 
@@ -88,8 +88,8 @@ namespace CookieProjects.FastDLCompressor
 			{
 				MaxDegreeOfParallelism = config.MaxThreads != 0 ? config.MaxThreads : Environment.ProcessorCount
 			},
-			f => { 
-				var relPath = Helper.ToRelativePath(sDir.Directory, f);
+			f => {
+				var relPath = sDir.Directory.RelativePath(f);
 				if (!MatchFilters(relPath, sDir.Includes) && MatchFilters(relPath, sDir.Filters))
 					return;
 

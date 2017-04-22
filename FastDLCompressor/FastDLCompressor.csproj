@@ -95,7 +95,7 @@
   <ItemGroup>
     <Compile Include="FileEntry.cs" />
     <Compile Include="FileList.cs" />
-    <Compile Include="Helper.cs" />
+    <Compile Include="StringExtension.cs" />
     <Compile Include="JsonConfiguration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
