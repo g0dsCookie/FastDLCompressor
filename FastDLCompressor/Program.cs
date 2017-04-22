@@ -1,4 +1,5 @@
-﻿using NDesk.Options;
+﻿using CookieProjects.FastDLCompressor.Configuration;
+using NDesk.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

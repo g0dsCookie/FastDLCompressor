@@ -3,51 +3,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 
-namespace CookieProjects.FastDLCompressor
+namespace CookieProjects.FastDLCompressor.Configuration
 {
-	public class SourceDirectory
-	{
-		[JsonProperty("dir")]
-		public string Directory
-		{
-			get;
-			set;
-		}
-
-		[JsonProperty("includes")]
-		public string[] Includes
-		{
-			get;
-			set;
-		}
-
-		[JsonProperty("filters")]
-		public string[] Filters
-		{
-			get;
-			set;
-		}
-	}
-
-	public class CompressionOptions
-	{
-		[JsonProperty("level")]
-		[DefaultValue(9)]
-		public int Level
-		{
-			get;
-			set;
-		}
-
-		[JsonProperty("minimumSize")]
-		[DefaultValue(5*1024)]
-		public int MinimumSize
-		{
-			get;
-			set;
-		}
-	}
-
 	public class JsonConfiguration
 	{
 		static JsonConfiguration _globalConf;
