@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace CookieProjects.FastDLCompressor
+namespace CookieProjects.FastDLCompressor.Extensions
 {
 	public static class StringExtension
 	{

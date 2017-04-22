@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Linq;
 using CookieProjects.FastDLCompressor.Configuration;
+using CookieProjects.FastDLCompressor.Extensions;
 
 namespace CookieProjects.FastDLCompressor
 {

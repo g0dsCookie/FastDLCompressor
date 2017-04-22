@@ -97,7 +97,7 @@
     <Compile Include="Configuration\SourceDirectory.cs" />
     <Compile Include="FileEntry.cs" />
     <Compile Include="FileList.cs" />
-    <Compile Include="StringExtension.cs" />
+    <Compile Include="Extensions\StringExtension.cs" />
     <Compile Include="Configuration\JsonConfiguration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
