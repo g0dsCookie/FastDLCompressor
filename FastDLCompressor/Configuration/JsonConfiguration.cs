@@ -10,7 +10,6 @@ namespace CookieProjects.FastDLCompressor.Configuration
 	public class JsonConfiguration
 	{
 		static JsonConfiguration _globalConf;
-		static System.Threading.Mutex _globalConfMux = new System.Threading.Mutex();
 
 		public static JsonConfiguration Configuration
 		{
@@ -20,7 +19,6 @@ namespace CookieProjects.FastDLCompressor.Configuration
 			}
 			set
 			{
-				_globalConfMux.WaitOne();
 				_globalConf = value;
 				
 				if (_globalConf.MaxThreads < 0)
@@ -31,8 +29,6 @@ namespace CookieProjects.FastDLCompressor.Configuration
 
 				if (_globalConf.CompressionOptions.MinimumSize < 0)
 					_globalConf.CompressionOptions.MinimumSize = 0;
-
-				_globalConfMux.ReleaseMutex();
 			}
 		}
 
