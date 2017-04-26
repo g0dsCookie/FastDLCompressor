@@ -124,7 +124,7 @@ namespace CookieProjects.FastDLCompressor
 		{
 			if (directory.Directory[directory.Directory.Length - 1] != Path.DirectorySeparatorChar)
 				directory.Directory += Path.DirectorySeparatorChar;
-			
+
 			var fl = new FileList(directory.Directory);
 
 			var files = Walk(directory.Directory, directory);

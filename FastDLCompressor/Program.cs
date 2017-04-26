@@ -1,4 +1,5 @@
 ﻿using CookieProjects.FastDLCompressor.Configuration;
+using CookieProjects.FastDLCompressor.Uploader;
 using NDesk.Options;
 using System;
 using System.Collections.Generic;
@@ -83,41 +84,20 @@ namespace CookieProjects.FastDLCompressor
 				return;
 			}
 
+			JsonConfiguration conf;
+
 			if (!string.IsNullOrWhiteSpace(configFile))
-				Compress(JsonConfiguration.Load(configFile));
+				conf = JsonConfiguration.Load(configFile);
 			else
+				conf = JsonConfiguration.Generate(targetDir, sourceDirs, cleanupTarget, threads);
+
+			Compress(conf);
+
+			if (conf.FtpConfiguration != null)
 			{
-				if (string.IsNullOrWhiteSpace(targetDir))
-				{
-					Console.Error.WriteLine("Target directory not specified.");
-					Environment.Exit(1);
-				}
-				if (sourceDirs.Count == 0)
-				{
-					Console.Error.WriteLine("No source directory specified.");
-					Environment.Exit(1);
-				}
-
-				var conf = new JsonConfiguration()
-				{
-					CleanupTargetDirectory = cleanupTarget,
-					TargetDirectory = targetDir,
-					MaxThreads = threads
-				};
-
-				var sDirs = new List<SourceDirectory>();
-				sourceDirs.ForEach(s =>
-				{
-					sDirs.Add(new SourceDirectory()
-					{
-						Directory = s,
-						Filters = new string[0],
-						Includes = new string[0]
-					});
-				});
-				conf.SourceDirectories = sDirs.ToArray();
-
-				Compress(conf);
+				var ftp = new FtpUploader(conf.FtpConfiguration);
+				ftp.DeleteDirectory(conf.FtpConfiguration.Destination);
+				ftp.UploadDirectory(conf.TargetDirectory, conf.FtpConfiguration.Destination);
 			}
 		}
 	}
