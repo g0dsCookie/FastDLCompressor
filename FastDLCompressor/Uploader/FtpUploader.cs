@@ -114,6 +114,7 @@ namespace CookieProjects.FastDLCompressor.Uploader
 				directory += Path.DirectorySeparatorChar;
 
 			var fileList = FileList.Build(new Configuration.SourceDirectory() { Directory = directory });
+			var logger = Logger.Global;
 
 			Parallel.ForEach(fileList.Files,
 				new ParallelOptions() { MaxDegreeOfParallelism = Threads },
@@ -124,6 +125,7 @@ namespace CookieProjects.FastDLCompressor.Uploader
 
 					CreateDirectory(FtpDirectoryEntry.Combine(destination, relPathDir), true);
 
+					logger.Write($"Uploading file {relPath}.");
 					UploadFile(f.Path, FtpDirectoryEntry.Combine(destination, relPath));
 				});
 

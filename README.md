@@ -42,6 +42,17 @@ Open a command line window (cmd.exe) and run the compressor with your source and
             "level": 9,
             "minimumSize": 5120
         },
+        "ftp": {
+            "username": "",
+            "password": "",
+            "hostname": "",
+            "threads": 2
+        },
+        "log": {
+            "file": "compressor.log",
+            "append": true,
+            "severity": "INFO"
+        },
         "target": "C:\\target",
         "cleanupTarget": true,
         "threads": 0,

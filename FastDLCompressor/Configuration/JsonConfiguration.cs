@@ -20,7 +20,7 @@ namespace CookieProjects.FastDLCompressor.Configuration
 			set
 			{
 				_globalConf = value;
-				
+
 				if (_globalConf.MaxThreads < 0)
 					_globalConf.MaxThreads = 0;
 
@@ -29,6 +29,14 @@ namespace CookieProjects.FastDLCompressor.Configuration
 
 				if (_globalConf.CompressionOptions.MinimumSize < 0)
 					_globalConf.CompressionOptions.MinimumSize = 0;
+
+				if (_globalConf.LogConfiguration == null)
+					_globalConf.LogConfiguration = new LoggerConfiguration()
+					{
+						Logfile = "fastdlcompressor.log",
+						Append = true,
+						Severity = Severity.INFO
+					};
 			}
 		}
 
@@ -62,14 +70,6 @@ namespace CookieProjects.FastDLCompressor.Configuration
 			set;
 		}
 
-		[JsonProperty("verbose")]
-		[DefaultValue(false)]
-		public bool Verbose
-		{
-			get;
-			set;
-		}
-
 		[JsonProperty("compression")]
 		[DefaultValue(null)]
 		public CompressionOptions CompressionOptions
@@ -81,6 +81,14 @@ namespace CookieProjects.FastDLCompressor.Configuration
 		[JsonProperty("ftp")]
 		[DefaultValue(null)]
 		public FtpConfiguration FtpConfiguration
+		{
+			get;
+			set;
+		}
+
+		[JsonProperty("log")]
+		[DefaultValue(null)]
+		public LoggerConfiguration LogConfiguration
 		{
 			get;
 			set;

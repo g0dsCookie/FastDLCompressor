@@ -18,36 +18,17 @@ namespace CookieProjects.FastDLCompressor
 			p.WriteOptionDescriptions(Console.Out);
 		}
 
-		static void Compress(JsonConfiguration config)
+		static void Compress()
 		{
-			JsonConfiguration.Configuration = config;
+			var config = JsonConfiguration.Configuration;
 
-			if (config.CleanupTargetDirectory)
-			{
-				if (Directory.Exists(config.TargetDirectory))
-				{
-					Console.WriteLine("Removing old directory...");
-					Directory.Delete(config.TargetDirectory, true);
-				}
-			}
-
-			var sw = new Stopwatch();
+			if (config.CleanupTargetDirectory && Directory.Exists(config.TargetDirectory))
+				Directory.Delete(config.TargetDirectory, true);
 
 			foreach (var s in config.SourceDirectories)
 			{
-				sw.Reset();
-				Console.WriteLine($"Building file list for {s.Directory}...");
-				sw.Start();
 				var fl = FileList.Build(s);
-				sw.Stop();
-				Console.WriteLine($"File list created in {sw.ElapsedMilliseconds} ms.");
-
-				sw.Reset();
-				Console.WriteLine("Compressing files...");
-				sw.Start();
 				fl.Compress(config.TargetDirectory);
-				sw.Stop();
-				Console.WriteLine($"Compressing done in {sw.ElapsedMilliseconds} ms.");
 			}
 		}
 
@@ -84,14 +65,18 @@ namespace CookieProjects.FastDLCompressor
 				return;
 			}
 
-			JsonConfiguration conf;
-
 			if (!string.IsNullOrWhiteSpace(configFile))
-				conf = JsonConfiguration.Load(configFile);
+				JsonConfiguration.Configuration = JsonConfiguration.Load(configFile);
 			else
-				conf = JsonConfiguration.Generate(targetDir, sourceDirs, cleanupTarget, threads);
+				JsonConfiguration.Configuration = JsonConfiguration.Generate(targetDir, sourceDirs, cleanupTarget, threads);
+			var conf = JsonConfiguration.Configuration;
 
-			Compress(conf);
+			Logger.Global = new Logger(
+				conf.LogConfiguration.Severity,
+				conf.LogConfiguration.Logfile,
+				conf.LogConfiguration.Append);
+
+			Compress();
 
 			if (conf.FtpConfiguration != null)
 			{

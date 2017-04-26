@@ -31,6 +31,8 @@ namespace CookieProjects.FastDLCompressor
 		public void Compress(string targetDirectory)
 		{
 			var config = JsonConfiguration.Configuration;
+			var logger = Logger.Global;
+
 			Parallel.ForEach(Files, new ParallelOptions()
 			{
 				MaxDegreeOfParallelism = config.MaxThreads != 0 ? config.MaxThreads : Environment.ProcessorCount
@@ -43,8 +45,7 @@ namespace CookieProjects.FastDLCompressor
 				var fi = new FileInfo(f.Path);
 				if (fi.Length <= config.CompressionOptions.MinimumSize)
 				{
-					if (config.Verbose)
-						Console.WriteLine($"Moving file {relPath} because the size is below the MinimumSize.");
+					logger.Write($"Moving file {relPath} because the size is below the MinimumSize.");
 					File.Move(f.Path, targetFileName);
 					return;
 				}
@@ -55,13 +56,12 @@ namespace CookieProjects.FastDLCompressor
 					{
 						try
 						{
-							if (config.Verbose)
-								Console.WriteLine($"Compressing file {relPath}");
+							logger.Write($"Compressing file {relPath}");
 							BZip2.Compress(sourceFile, targetFile, true, config.CompressionOptions.Level);
 						}
 						catch (Exception ex)
 						{
-							Console.WriteLine($"Could not compress {relPath}: {ex.Message}");
+							logger.Write(ex, $"Could not compress {relPath}");
 						}
 					}
 				}
@@ -85,6 +85,7 @@ namespace CookieProjects.FastDLCompressor
 		{
 			var entries = new List<FileEntry>();
 			var config = JsonConfiguration.Configuration;
+			var logger = Logger.Global;
 			
 			Parallel.ForEach(Directory.EnumerateFileSystemEntries(directory), new ParallelOptions()
 			{
@@ -98,6 +99,7 @@ namespace CookieProjects.FastDLCompressor
 				var attr = File.GetAttributes(f);
 				if (attr.HasFlag(FileAttributes.Directory))
 				{
+					logger.Write($"Found directory {f}.", Severity.DEBUG);
 					var t = Walk(f, sDir);
 					if (t.Count > 0)
 					{
@@ -112,6 +114,7 @@ namespace CookieProjects.FastDLCompressor
 				{
 					lock (entries)
 					{
+						logger.Write($"Found file {f}.", Severity.DEBUG);
 						entries.Add(new FileEntry(f));
 					}
 				}
